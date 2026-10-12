@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Room Occupancy System — Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+  <div class="bg-gradient-overlay"></div>
+
+  <!-- Navigation Backdrop and Drawer -->
+  <div id="nav-overlay" class="nav-overlay hidden"></div>
+  <aside id="nav-drawer" class="nav-drawer" aria-hidden="true">
+    <div class="nav-drawer-header">
+      <div class="nav-header-brand">
+        <span class="nav-brand-icon">🏢</span>
+        <span class="nav-brand-title">Menu</span>
+      </div>
+      <button id="btn-close-nav" class="nav-close-btn" aria-label="Close navigation">&times;</button>
+    </div>
+    <nav class="nav-menu-content">
+      <ul class="nav-menu-list">
+        <li>
+          <a href="#home" id="nav-item-home" class="nav-item-link active">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Home</span>
+          </a>
+        </li>
+        <li>
+          <a href="#rooms" id="nav-item-rooms" class="nav-item-link">
+            <span class="nav-icon">🏢</span>
+            <span class="nav-text">Rooms</span>
+          </a>
+        </li>
+        <li>
+          <a href="#history" id="nav-item-history" class="nav-item-link">
+            <span class="nav-icon">📜</span>
+            <span class="nav-text">History</span>
+          </a>
+        </li>
+        <li class="nav-divider"></li>
+        <li>
+          <button id="btn-logout" class="nav-item-link nav-logout-item">
+            <span class="nav-icon">🚪</span>
+            <span class="nav-text">Log Out</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="app-container">
+    <section id="occupancy-screen" class="screen-section">
+
+      <!-- Global Top Header -->
+      <header class="dashboard-header">
+        <div class="user-profile-summary">
+          <div class="user-avatar" id="header-avatar">U</div>
+          <div class="user-details">
+            <h2 id="header-user-name">User Name</h2>
+            <span id="header-user-badge" class="badge">Role</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <div class="clock-card">
+            <div class="clock-icon">🕒</div>
+            <div class="clock-content">
+              <span id="live-time" class="time-string">00:00:00 AM</span>
+              <span id="live-date" class="date-string">Loading date...</span>
+            </div>
+          </div>
+
+          <button id="btn-hamburger" class="hamburger-btn" aria-label="Open Navigation Menu" title="Menu">
+            <span class="hamburger-bar"></span>
+            <span class="hamburger-bar"></span>
+            <span class="hamburger-bar"></span>
+          </button>
+        </div>
+      </header>
+
+      <!-- ========================================== -->
+      <!-- VIEW 1: HOME PAGE                          -->
+      <!-- ========================================== -->
+      <div id="view-home" class="app-view"></div>
+
+      <!-- ========================================== -->
+      <!-- VIEW 2: ROOMS PAGE                         -->
+      <!-- ========================================== -->
+      <div id="view-rooms" class="app-view hidden">
+        <div class="dashboard-content">
+          <div class="content-header">
+            <div class="content-titles">
+              <h3>Room Status Monitor</h3>
+              <p id="role-instructions" class="section-desc">Interactive room layout grid synced live with Python backend.</p>
+            </div>
+
+            <div class="status-legend">
+              <span class="legend-item"><span class="dot vacant"></span> Vacant</span>
+              <span class="legend-item"><span class="dot occupied"></span> Occupied</span>
+            </div>
+          </div>
+
+          <div id="rooms-grid" class="rooms-grid">
+            <!-- Dynamically populated from /api/rooms -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- VIEW 3: HISTORY PAGE                       -->
+      <!-- ========================================== -->
+      <div id="view-history" class="app-view hidden">
+        <div class="history-section">
+          <div class="history-title-row">
+            <div class="history-title-content">
+              <div class="title-with-badge">
+                <h3>📜 Room Usage History</h3>
+                <span id="history-count-badge" class="history-count-badge">0 records</span>
+              </div>
+              <p class="section-desc">Real-time log showing instructor sessions, assigned subjects, and time in / time out timestamps.</p>
+            </div>
+            <div class="history-actions">
+              <button id="btn-refresh-history" class="btn-secondary btn-sm" title="Refresh Log">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                </svg>
+                <span>Refresh</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="history-list" class="history-list">
+            <!-- Dynamically populated from /api/history -->
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Admin Occupy Modal -->
+  <div id="occupy-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Occupy Room</h3>
+        <button class="modal-close-btn" data-close>&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-room-info">
+          <span class="room-label">Target Room</span>
+          <h4 id="occupy-room-name">Room 1</h4>
+        </div>
+        <div class="modal-inputs-wrapper">
+          <div class="input-group" id="group-occupy-instructor">
+            <label for="occupy-instructor-name">Instructor Name</label>
+            <input type="text" id="occupy-instructor-name" placeholder="Enter instructor's name" autocomplete="off">
+            <span class="error-msg">Instructor name is required</span>
+          </div>
+          <div class="input-group" id="group-occupy-subject" style="margin-top: 14px;">
+            <label for="occupy-instructor-subject">Subject Assigned</label>
+            <input type="text" id="occupy-instructor-subject" placeholder="Enter assigned subject" autocomplete="off">
+            <span class="error-msg">Subject is required</span>
+          </div>
+        </div>
+        <p class="modal-help-text">Occupying this room will assign the instructor and subject with the current timestamp.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" data-close>Cancel</button>
+        <button id="btn-confirm-occupy" class="btn-primary">Occupy Room</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Vacate Modal -->
+  <div id="vacate-modal" class="modal-overlay hidden">
+    <div class="modal-card destructive">
+      <div class="modal-header">
+        <h3>Vacate Room</h3>
+        <button class="modal-close-btn" data-close>&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-room-info">
+          <span class="room-label">Target Room</span>
+          <h4 id="vacate-room-name">Room 1</h4>
+        </div>
+        <div class="occupant-preview-card">
+          <div class="field-preview">
+            <span class="field-title">Current Occupant</span>
+            <span class="field-value" id="vacate-instructor-name">Jane Smith</span>
+          </div>
+          <div class="field-preview">
+            <span class="field-title">Subject</span>
+            <span class="field-value" id="vacate-instructor-subject">Advanced Computing</span>
+          </div>
+          <div class="field-preview">
+            <span class="field-title">Clocked In At</span>
+            <span class="field-value" id="vacate-clock-in-time">09:30 AM</span>
+          </div>
+        </div>
+        <p class="modal-help-text">Vacating this room will clear its status to VACANT and record this session in History.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" data-close>Cancel</button>
+        <button id="btn-confirm-vacate" class="btn-danger">Vacate Room</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+      const userRaw = sessionStorage.getItem('currentUser');
+      if (!userRaw) {
+        window.location.href = '/index.html';
+        return;
+      }
+      const currentUser = JSON.parse(userRaw);
+      const isAdmin = currentUser.role === 'admin';
+
+      let roomsData = {};
+      let currentActiveRoomName = null;
+
+      // Header Elements
+      const headerAvatar = document.getElementById('header-avatar');
+      const headerUserName = document.getElementById('header-user-name');
+      const headerUserBadge = document.getElementById('header-user-badge');
+
+      // Views
+      const viewHome = document.getElementById('view-home');
+      const viewRooms = document.getElementById('view-rooms');
+      const viewHistory = document.getElementById('view-history');
+
+
+
+      // Hamburger / Navigation Elements
+      const btnHamburger = document.getElementById('btn-hamburger');
+      const navDrawer = document.getElementById('nav-drawer');
+      const navOverlay = document.getElementById('nav-overlay');
+      const btnCloseNav = document.getElementById('btn-close-nav');
+      const navItemHome = document.getElementById('nav-item-home');
+      const navItemRooms = document.getElementById('nav-item-rooms');
+      const navItemHistory = document.getElementById('nav-item-history');
+      const btnLogout = document.getElementById('btn-logout');
+
+      // Room Elements
+      const roleInstructions = document.getElementById('role-instructions');
+      const roomsGrid = document.getElementById('rooms-grid');
+
+      // Clock Elements
+      const liveTimeEl = document.getElementById('live-time');
+      const liveDateEl = document.getElementById('live-date');
+
+      // Occupy Modal Elements
+      const occupyModal = document.getElementById('occupy-modal');
+      const occupyRoomName = document.getElementById('occupy-room-name');
+      const occupyInstructorName = document.getElementById('occupy-instructor-name');
+      const occupyInstructorSubject = document.getElementById('occupy-instructor-subject');
+      const groupOccupyInstructor = document.getElementById('group-occupy-instructor');
+      const groupOccupySubject = document.getElementById('group-occupy-subject');
+      const btnConfirmOccupy = document.getElementById('btn-confirm-occupy');
+
+      // Vacate Modal Elements
+      const vacateModal = document.getElementById('vacate-modal');
+      const vacateRoomName = document.getElementById('vacate-room-name');
+      const vacateInstructorName = document.getElementById('vacate-instructor-name');
+      const vacateInstructorSubject = document.getElementById('vacate-instructor-subject');
+      const vacateClockInTime = document.getElementById('vacate-clock-in-time');
+      const btnConfirmVacate = document.getElementById('btn-confirm-vacate');
+
+      // History Elements
+      const historyList = document.getElementById('history-list');
+      const historyCountBadge = document.getElementById('history-count-badge');
+      const btnRefreshHistory = document.getElementById('btn-refresh-history');
+
+      // Populate User Info
+      headerUserName.textContent = currentUser.fullName;
+      headerAvatar.textContent = currentUser.firstName ? currentUser.firstName.charAt(0).toUpperCase() : 'U';
+      headerUserBadge.textContent = isAdmin ? 'Admin' : 'Instructor';
+
+
+      if (!isAdmin) {
+        roleInstructions.textContent = 'View-only room occupancy monitor synced live with backend.';
+      } else {
+        roleInstructions.textContent = 'Admin control: Click any vacant room to assign occupancy, or an occupied room to vacate.';
+      }
+
+      // --- Navigation View Switcher ---
+      function switchView(viewName) {
+        viewHome.classList.add('hidden');
+        viewRooms.classList.add('hidden');
+        viewHistory.classList.add('hidden');
+
+        [navItemHome, navItemRooms, navItemHistory].forEach(item => {
+          if (item) item.classList.remove('active');
+        });
+
+        if (viewName === 'rooms') {
+          viewRooms.classList.remove('hidden');
+          navItemRooms?.classList.add('active');
+          window.location.hash = 'rooms';
+        } else if (viewName === 'history') {
+          viewHistory.classList.remove('hidden');
+          navItemHistory?.classList.add('active');
+          window.location.hash = 'history';
+        } else {
+          viewHome.classList.remove('hidden');
+          navItemHome?.classList.add('active');
+          window.location.hash = 'home';
+        }
+
+        closeNav();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // Check URL hash on load
+      const initialHash = (window.location.hash || '').replace('#', '');
+      if (initialHash === 'rooms' || initialHash === 'history') {
+        switchView(initialHash);
+      } else {
+        switchView('home');
+      }
+
+      // --- Navigation Drawer Controls ---
+      function openNav() {
+        navDrawer.classList.add('open');
+        navOverlay.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeNav() {
+        navDrawer.classList.remove('open');
+        navOverlay.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+
+      btnHamburger.addEventListener('click', openNav);
+      btnCloseNav.addEventListener('click', closeNav);
+      navOverlay.addEventListener('click', closeNav);
+
+      navItemHome.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchView('home');
+      });
+
+      navItemRooms.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchView('rooms');
+      });
+
+      navItemHistory.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchView('history');
+      });
+
+
+      btnLogout.addEventListener('click', () => {
+        sessionStorage.removeItem('currentUser');
+        window.location.href = '/index.html';
+      });
+
+      // --- Clock ---
+      function updateClock() {
+        const now = new Date();
+        let hours = now.getHours();
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        const hoursStr = String(hours).padStart(2, '0');
+
+        liveTimeEl.textContent = `${hoursStr}:${minutes}:${seconds} ${ampm}`;
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        liveDateEl.textContent = now.toLocaleDateString('en-US', options);
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
+
+      // --- Rooms API & Render ---
+      async function fetchRooms() {
+        try {
+          const res = await fetch('/api/rooms');
+          if (res.ok) {
+            roomsData = await res.json();
+            renderRooms();
+          }
+        } catch (err) {
+          console.error('Error fetching rooms:', err);
+        }
+      }
+
+      function renderRooms() {
+        roomsGrid.innerHTML = '';
+
+        Object.keys(roomsData).forEach(roomName => {
+          const room = roomsData[roomName];
+          const isOccupied = room.status === 'OCCUPIED';
+
+          const card = document.createElement('div');
+          card.className = `room-card ${isOccupied ? 'occupied' : 'vacant'}`;
+
+          // Only admins can click to occupy or vacate
+          if (isAdmin) {
+            card.classList.add('interactive');
+            card.setAttribute('tabindex', '0');
+            card.addEventListener('click', () => handleRoomClick(roomName));
+            card.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleRoomClick(roomName);
+              }
+            });
+          }
+
+          const headerDiv = document.createElement('div');
+          headerDiv.className = 'room-header';
+          const nameH4 = document.createElement('h4');
+          nameH4.className = 'room-name';
+          nameH4.textContent = roomName;
+
+          const badgeSpan = document.createElement('span');
+          badgeSpan.className = 'status-badge';
+          badgeSpan.textContent = isOccupied ? 'Occupied' : 'Vacant';
+
+          headerDiv.appendChild(nameH4);
+          headerDiv.appendChild(badgeSpan);
+          card.appendChild(headerDiv);
+
+          if (isOccupied) {
+            const detailsDiv = document.createElement('div');
+            detailsDiv.className = 'room-details-box';
+            detailsDiv.innerHTML = `
+              <div class="detail-line">
+                <span class="label">Instructor</span>
+                <span class="value" title="${room.instructor}">${room.instructor}</span>
+              </div>
+              <div class="detail-line">
+                <span class="label">Subject</span>
+                <span class="value" title="${room.subject}">${room.subject}</span>
+              </div>
+              <div class="detail-line">
+                <span class="label">Clocked In</span>
+                <span class="value">${room.time_in}</span>
+              </div>
+            `;
+            card.appendChild(detailsDiv);
+          }
+
+          const placeholder = document.createElement('div');
+          placeholder.className = 'vacant-placeholder';
+          if (isAdmin) {
+            if (isOccupied) {
+              placeholder.innerHTML = '<span>🔴</span> Click to vacate room';
+            } else {
+              placeholder.innerHTML = '<span>🟢</span> Click to occupy room';
+            }
+          } else {
+            if (isOccupied) {
+              placeholder.innerHTML = '<span>🔴</span> In Use';
+            } else {
+              placeholder.innerHTML = '<span>🟢</span> Available';
+            }
+          }
+          card.appendChild(placeholder);
+
+          roomsGrid.appendChild(card);
+        });
+      }
+
+      function handleRoomClick(roomName) {
+        if (!isAdmin) return; // View-only for instructors
+        const room = roomsData[roomName];
+        if (!room) return;
+
+        currentActiveRoomName = roomName;
+
+        if (room.status === 'VACANT') {
+          occupyRoomName.textContent = roomName;
+          occupyInstructorName.value = '';
+          occupyInstructorSubject.value = '';
+          groupOccupyInstructor.classList.remove('invalid');
+          groupOccupySubject.classList.remove('invalid');
+          openModal(occupyModal);
+          setTimeout(() => occupyInstructorName.focus(), 100);
+        } else {
+          vacateRoomName.textContent = roomName;
+          vacateInstructorName.textContent = room.instructor;
+          vacateInstructorSubject.textContent = room.subject;
+          vacateClockInTime.textContent = room.time_in;
+          openModal(vacateModal);
+        }
+      }
+
+      // Input clear invalid on typing
+      [occupyInstructorName, occupyInstructorSubject].forEach(input => {
+        input.addEventListener('input', () => {
+          input.closest('.input-group')?.classList.remove('invalid');
+        });
+      });
+
+      // Admin Confirm Occupy
+      btnConfirmOccupy.addEventListener('click', async () => {
+        if (!currentActiveRoomName || !isAdmin) return;
+
+        const instructor = occupyInstructorName.value.trim();
+        const subject = occupyInstructorSubject.value.trim();
+
+        let hasError = false;
+        if (!instructor) {
+          groupOccupyInstructor.classList.add('invalid');
+          hasError = true;
+        }
+        if (!subject) {
+          groupOccupySubject.classList.add('invalid');
+          hasError = true;
+        }
+        if (hasError) return;
+
+        const payload = {
+          room: currentActiveRoomName,
+          instructor: instructor,
+          subject: subject
+        };
+
+        try {
+          const res = await fetch('/api/occupy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const result = await res.json();
+          if (res.ok) {
+            closeAllModals();
+            fetchRooms();
+          } else {
+            alert(result.error || 'Failed to occupy room.');
+          }
+        } catch (err) {
+          console.error('Error occupying room:', err);
+        }
+      });
+
+      // Admin Confirm Vacate
+      btnConfirmVacate.addEventListener('click', async () => {
+        if (!currentActiveRoomName || !isAdmin) return;
+
+        const payload = {
+          room: currentActiveRoomName
+        };
+
+        try {
+          const res = await fetch('/api/vacate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            closeAllModals();
+            fetchRooms();
+            fetchHistory();
+          } else {
+            const result = await res.json();
+            alert(result.error || 'Failed to vacate room.');
+          }
+        } catch (err) {
+          console.error('Error vacating room:', err);
+        }
+      });
+
+      function openModal(modalEl) {
+        modalEl.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeAllModals() {
+        occupyModal.classList.add('hidden');
+        vacateModal.classList.add('hidden');
+        document.body.style.overflow = '';
+        currentActiveRoomName = null;
+      }
+
+      document.querySelectorAll('[data-close]').forEach(btn => {
+        btn.addEventListener('click', closeAllModals);
+      });
+
+      window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal-overlay')) closeAllModals();
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeAllModals();
+          closeNav();
+        }
+      });
+
+      // --- History ---
+      async function fetchHistory() {
+        try {
+          const res = await fetch('/api/history');
+          if (res.ok) {
+            const historyData = await res.json();
+            renderHistory(historyData);
+          }
+        } catch (err) {
+          console.error('Error fetching history:', err);
+        }
+      }
+
+      function renderHistory(historyData) {
+        if (!historyList) return;
+        historyList.innerHTML = '';
+
+        const entries = Array.isArray(historyData) ? historyData : [];
+
+        if (entries.length === 0) {
+          if (historyCountBadge) historyCountBadge.textContent = '0 records';
+          historyList.innerHTML = `
+            <div class="history-empty">
+              <p>No room usage history recorded yet.</p>
+            </div>
+          `;
+          return;
+        }
+
+        if (historyCountBadge) {
+          historyCountBadge.textContent = `${entries.length} ${entries.length === 1 ? 'record' : 'records'}`;
+        }
+
+        entries.forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'history-item';
+
+          const roomName = item.room || '—';
+          const instructorName = item.instructor || '—';
+          const subjectName = item.subject || '—';
+          const timeIn = item.time_in || '—';
+          const timeOut = item.time_out || '—';
+          const dateStr = item.date || '';
+
+          row.innerHTML = `
+            <div class="history-left">
+              <span class="history-room-tag">${roomName}</span>
+              <div class="history-user-info">
+                <div class="history-instructor-name">${instructorName}</div>
+                <div class="history-subject-name">${subjectName}</div>
+              </div>
+            </div>
+            <div class="history-right">
+              <div class="history-time-range">
+                <span class="history-pill time-in"><span class="time-label">IN:</span> ${timeIn}</span>
+                <span class="history-arrow">➜</span>
+                <span class="history-pill time-out"><span class="time-label">OUT:</span> ${timeOut}</span>
+              </div>
+              ${dateStr ? `<div class="history-meta"><span class="history-date">${dateStr}</span></div>` : ''}
+            </div>
+          `;
+
+          historyList.appendChild(row);
+        });
+      }
+
+      if (btnRefreshHistory) {
+        btnRefreshHistory.addEventListener('click', () => {
+          fetchHistory();
+        });
+      }
+
+      // Initial loads
+      fetchRooms();
+      fetchHistory();
+    });
+  </script>
+</body>
+
+</html>

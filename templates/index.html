@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Room Occupancy System — Sign In</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+  <div class="bg-gradient-overlay"></div>
+
+  <main class="app-container">
+    <section id="signin-screen" class="screen-section">
+      <div class="signin-card">
+        <div class="card-header">
+          <div class="logo-icon">🏢</div>
+          <h1>Room Occupancy System</h1>
+          <p class="subtitle">Sign in as Admin or Instructor</p>
+        </div>
+
+        <form id="signin-form" novalidate autocomplete="off">
+          <div class="form-row">
+            <div class="input-group">
+              <label for="first-name">First Name</label>
+              <input type="text" id="first-name" name="user_firstname_custom" required autocomplete="off"
+                autocorrect="off" autocapitalize="off" spellcheck="false" readonly
+                onfocus="this.removeAttribute('readonly');">
+              <span class="error-msg">First name is required</span>
+            </div>
+            <div class="input-group">
+              <label for="middle-name">Middle Name</label>
+              <input type="text" id="middle-name" name="user_middlename_custom" autocomplete="off" autocorrect="off"
+                autocapitalize="off" spellcheck="false" readonly onfocus="this.removeAttribute('readonly');">
+            </div>
+            <div class="input-group">
+              <label for="last-name">Last Name</label>
+              <input type="text" id="last-name" name="user_lastname_custom" required autocomplete="off"
+                autocorrect="off" autocapitalize="off" spellcheck="false" readonly
+                onfocus="this.removeAttribute('readonly');">
+              <span class="error-msg">Last name is required</span>
+            </div>
+          </div>
+
+
+          <div class="input-group">
+            <label for="user-role">Role</label>
+            <div class="select-wrapper">
+              <select id="user-role" required>
+                <option value="" disabled selected>Select your role</option>
+                <option value="admin">Admin</option>
+                <option value="instructor">Instructor</option>
+              </select>
+            </div>
+            <span class="error-msg">Please select your role</span>
+          </div>
+
+          <button type="submit" id="btn-signin" class="btn-primary">
+            <span>Sign In</span>
+            <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const signinForm = document.getElementById('signin-form');
+      const userRoleSelect = document.getElementById('user-role');
+
+      const existingUser = sessionStorage.getItem('currentUser');
+      if (existingUser) {
+        window.location.href = '/rooms';
+        return;
+      }
+
+      function validateForm() {
+        let isValid = true;
+        const inputs = signinForm.querySelectorAll('input[required], select[required]');
+        inputs.forEach(input => {
+          const group = input.closest('.input-group');
+          if (!input.value || input.value.trim() === '') {
+            if (group) group.classList.add('invalid');
+            isValid = false;
+          } else {
+            if (group) group.classList.remove('invalid');
+          }
+        });
+        return isValid;
+      }
+
+      signinForm.querySelectorAll('input, select').forEach(element => {
+        element.addEventListener('input', () => {
+          element.closest('.input-group')?.classList.remove('invalid');
+        });
+        element.addEventListener('change', () => {
+          element.closest('.input-group')?.classList.remove('invalid');
+        });
+      });
+
+      signinForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) return;
+
+        const firstName = document.getElementById('first-name').value.trim();
+        const middleName = document.getElementById('middle-name').value.trim();
+        const lastName = document.getElementById('last-name').value.trim();
+        const role = userRoleSelect.value;
+
+        const middlePart = middleName ? ` ${middleName}` : '';
+        const fullName = `${firstName}${middlePart} ${lastName}`;
+
+        const currentUser = {
+          fullName,
+          firstName,
+          lastName,
+          role,
+          detail: role === 'admin' ? 'Administrator' : 'Instructor'
+        };
+
+        sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+        window.location.href = '/rooms';
+      });
+    });
+  </script>
+</body>
+
+</html>

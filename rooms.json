@@ -1,0 +1,74 @@
+{
+    "Room 1": {
+        "status": "VACANT",
+        "instructor": "None",
+        "subject": "None",
+        "time_in": "None"
+    },
+    "Room 2": {
+        "status": "OCCUPIED",
+        "instructor": "uncle dags",
+        "subject": "orgimal",
+        "time_in": "03:36 PM"
+    },
+    "Room 3": {
+        "status": "VACANT",
+        "instructor": "None",
+        "subject": "None",
+        "time_in": "None"
+    },
+    "Room 4": {
+        "status": "VACANT",
+        "instructor": "None",
+        "subject": "None",
+        "time_in": "None"
+    },
+    "Room 5": {
+        "status": "VACANT",
+        "instructor": "None",
+        "subject": "None",
+        "time_in": "None"
+    },
+    "Room 6": {
+        "status": "VACANT",
+        "instructor": "None",
+        "subject": "None",
+        "time_in": "None"
+    },
+    "Room 7": {
+        "status": "VACANT",
+        "instructor": "None",
+        "subject": "None",
+        "time_in": "None"
+    },
+    "Room 8": {
+        "status": "VACANT",
+        "instructor": "None",
+        "subject": "None",
+        "time_in": "None"
+    },
+    "Room 9": {
+        "status": "VACANT",
+        "instructor": "None",
+        "subject": "None",
+        "time_in": "None"
+    },
+    "Room 10": {
+        "status": "VACANT",
+        "instructor": "None",
+        "subject": "None",
+        "time_in": "None"
+    },
+    "Room 11": {
+        "status": "VACANT",
+        "instructor": "None",
+        "subject": "None",
+        "time_in": "None"
+    },
+    "Room 12": {
+        "status": "VACANT",
+        "instructor": "None",
+        "subject": "None",
+        "time_in": "None"
+    }
+}
